@@ -111,7 +111,7 @@ to
 Next, we set our service names.  You can either use the local IP for this or set hostnames.  If you choose to set 
 hostnames, you will need to register that hostname in DNS or set it in `/etc/hosts` on all nodes.
 
-**Note:** service names require at least one period in the name
+**Note:** Service names require at least one period in the name.
 
 Change the following line in `/etc/riak/vm.args`
 
@@ -153,12 +153,12 @@ The order in which you start the services is important as each is a dependency f
 
 Creating the admin user is an optional step, but it's a good test of our new services.  Creating a Riak CS user requires
 two inputs:
-*  Name - a URL encoded string.  Example: "admin%20user"
-*  Email - a unique email address.  Example: "admin@admin.com"
+1.  Name - a URL encoded string.  Example: "admin%20user"
+2.  Email - a unique email address.  Example: "admin@admin.com"
          
 We can create the admin user with the following `curl` command:
 
-    curl -s http://10.0.2.10:8080/user --data "name=admin%20user&email=admin@admin.com
+    curl -s http://10.0.2.10:8080/user --data "name=admin%20user&email=admin@admin.com"
     
 The output of this command will be a JSON object that looks like this:
 
@@ -171,7 +171,9 @@ In this case, those keys are:
     Secret key: RF7WD0b3RjfMK2cTaPfLkpZGbPDaeALDtqHeMw==
     
 You can use this same process to create additional Riak CS users.  To make this user the admin user, we set these 
-keys in the Riak CS and Stanchion `app.config` files.  The same keys will need to be set on all nodes of the cluster.
+keys in the Riak CS and Stanchion `app.config` files.  
+
+**Note:** The same admin keys will need to be set on all nodes of the cluster.
 
 Change the following lines in `/etc/riak-cs/app.config`
 
