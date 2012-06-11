@@ -180,8 +180,8 @@ if [ $INSTALL_RIAKCS == "y" ]
 then
   RIAKCS_IP=$(ask_user "Riak CS IP" $RIAKCS_IP)
 
-  echo "Setting Riak EDS backend to ELevelDB in app.config..."
-  perl -pi -e "s/{storage_backend, riak_kv_bitcask_backend}/{storage_backend, riak_kv_eleveldb_backend}/g" /etc/riak/app.config
+  echo "Setting Riak CS custom backend in Riak EDS app.config..."
+  perl -pi -e "s/{storage_backend, riak_kv_bitcask_backend},/{add_paths, \[\"\/usr\/lib64\/riak-cs\/lib\/riak_moss-1.0.1\/ebin\"\]},\n\t\t{storage_backend, riak_cs_kv_multi_backend},\n\t\t{multi_backend_prefix_list, \[{<<\"0b:\">>, be_blocks}\]},\n\t\t{multi_backend_default, be_default},\n\t\t{multi_backend, \[\n\t\t\t{be_default, riak_kv_eleveldb_backend, \[\n\t\t\t\t{max_open_files, 50},\n\t\t\t\t{data_root, \"\/var\/lib\/riak\/leveldb\"}\n\t\t\t\]},\n\t\t\t{be_blocks, riak_kv_bitcask_backend, \[\n\t\t\t\t{data_root, \"\/var\/lib\/riak\/bitcask\"}\n\t\t\t\]}\n\t\t\]\n\t    },/g" /etc/riak/app.config
 
   echo "Updating IPs in Riak EDS and Riak CS app.config and vm.args files..."
   perl -pi -e "s/{moss_ip, \"127.0.0.1\"}/{moss_ip, \"${RIAKCS_IP}\"}/g" /etc/riak-cs/app.config

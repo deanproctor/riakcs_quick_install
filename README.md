@@ -1,5 +1,5 @@
-riakcs_quick_install
-====================
+Riak CS Quick Install
+=====================
 
 Below are instructions on how to install a test cluster for Riak CS.  This guide does not cover system/service tuning,
 nor does it attempt to optimize your installation given your particular architecture.
@@ -56,7 +56,7 @@ And finally Stanchion:
 
 **Step 3: Set service configurations and start the services**
  
-First, Riak ships with Bitcask as the default backend.  We need to change this to ELevelDB for use with Riak CS.
+First, Riak ships with Bitcask as the default backend.  We need to change this to the Riak CS custom backend.
 
 Change the following line in `/etc/riak/app.config`
 
@@ -65,6 +65,21 @@ Change the following line in `/etc/riak/app.config`
 to
 
     {storage_backend, riak_kv_eleveldb_backend}
+
+    {add_paths, ["/usr/lib64/riak-cs/lib/riak_moss-1.0.1/ebin"]},
+            {storage_backend, riak_cs_kv_multi_backend},
+            {multi_backend_prefix_list, [{<<"0b:">>, be_blocks}]},
+            {multi_backend_default, be_default},
+            {multi_backend, [
+                {be_default, riak_kv_eleveldb_backend, [
+                    {max_open_files, 50},
+                    {data_root, "/var/lib/riak/leveldb"}
+                ]},
+                {be_blocks, riak_kv_bitcask_backend, [
+                    {data_root, "/var/lib/riak/bitcask"}
+                ]}
+            ]
+      },
 
 
 Next, we set our interface IPs in the app.config files.  In a production environment, you will likely have multiple
