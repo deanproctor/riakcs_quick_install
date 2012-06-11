@@ -64,8 +64,6 @@ Change the following line in `/etc/riak/app.config`
 
 to
 
-    {storage_backend, riak_kv_eleveldb_backend}
-
     {add_paths, ["/usr/lib64/riak-cs/lib/riak_moss-1.0.1/ebin"]},
             {storage_backend, riak_cs_kv_multi_backend},
             {multi_backend_prefix_list, [{<<"0b:">>, be_blocks}]},
