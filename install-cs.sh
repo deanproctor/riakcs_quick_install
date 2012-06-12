@@ -8,6 +8,7 @@ if [ ! $(id -u) -eq 0 ]; then echo "This script must be run as root."; exit; fi
 #----------------------------------------------------------------------
 
 CLEAN=FALSE
+RHEL=FALSE
 
 INSTALL_RIAKCS="y"
 INSTALL_HAPROXY="n"
@@ -30,6 +31,8 @@ LOCAL_IP=`ifconfig $(ip route | grep default | awk '{ print $5 }') | sed -n '/in
 RIAK_IP=$LOCAL_IP
 STANCHION_IP=$LOCAL_IP
 RIAKCS_IP=$LOCAL_IP
+
+if [ -e /etc/redhat-release ]; then RHEL=TRUE; fi
 
 
 #----------------------------------------------------------------------
@@ -61,7 +64,11 @@ done
 
 INSTALL_RIAKCS=$(ask_user "Install Riak CS (y/n)" $INSTALL_RIAKCS)
 INSTALL_STANCHION=$(ask_user "Install Stanchion (y/n)" $INSTALL_STANCHION)
-INSTALL_HAPROXY=$(ask_user "Install HAProxy (y/n)" $INSTALL_HAPROXY)
+
+if [ RHEL == FALSE ]
+then
+  INSTALL_HAPROXY=$(ask_user "Install HAProxy (y/n)" $INSTALL_HAPROXY)
+fi
 
 #----------------------------------------------------------------------
 # cleanup or leave old data
@@ -72,10 +79,19 @@ then
   cp $TMP_DIR/limits.conf /etc/security/limits.conf
   rm -rf $TMP_DIR
   killall -u riak
-  apt-get -qq purge stanchion > /dev/null
-  apt-get -qq purge riak-ee > /dev/null
-  apt-get -qq purge riak-cs > /dev/null
-  apt-get -qq purge haproxy > /dev/null
+  
+  if [ $RHEL == TRUE ]
+  then
+    rpm -e --quiet stanchion 2>&1 > /dev/null
+    rpm -e --quiet riak-ee 2>&1 > /dev/null
+    rpm -e --quiet riak-cs 2>&1 > /dev/null
+    rm -rf /var/lib/riak /var/lib/riak-cs
+  else
+    apt-get -qq purge stanchion > /dev/null
+    apt-get -qq purge riak-ee > /dev/null
+    apt-get -qq purge riak-cs > /dev/null
+    apt-get -qq purge haproxy > /dev/null
+  fi
 fi
 
 #----------------------------------------------------------------------
@@ -119,47 +135,85 @@ fi
 if [ ! -x /usr/bin/curl ]
 then 
   echo "Installing cURL dependency..."
-  apt-get -qq install curl
+  if [ $RHEL == TRUE ]
+  then
+    yum install curl
+  else
+    apt-get -qq install curl
+  fi
 fi
 
 # Riak requires libssl0.9.8 which is not included by default on Ubuntu
 # versions later than 11.04
-if [ $(lsb_release -rs | tr -d '.') -gt 1104 ]
-then 
-  echo "Installing libssl0.9.8 dependency..."
-  apt-get -qq install libssl0.9.8
+if [ $RHEL == FALSE ]
+then
+  if [ $(lsb_release -rs | tr -d '.') -gt 1104 ]
+  then 
+    echo "Installing libssl0.9.8 dependency..."
+    apt-get -qq install libssl0.9.8
+  fi
 fi
 
 cd $TMP_DIR
 
 if [ $INSTALL_RIAKCS == "y" ]
 then
-  echo "Downloading Riak EDS package..."
-  curl -s -O http://s3.amazonaws.com/private.downloads.basho.com/riak_ee/5fp9c2/1.1.2/riak-ee_1.1.2-1_amd64.deb
+  if [ $RHEL == TRUE ]
+  then
+    echo "Downloading Riak EDS package..."
+    curl -s -O http://s3.amazonaws.com/private.downloads.basho.com/riak_ee/5fp9c2/1.1.2/riak-ee-1.1.2-1.el6.x86_64.rpm 
+  
+    echo "Installing Riak EDS package..."
+    rpm -Uvh riak-ee-1.1.2-1.el6.x86_64.rpm
 
-  echo "Installing Riak EDS package..."
-  dpkg -i riak-ee_1.1.2-1_amd64.deb > /dev/null
+    echo "Downloading Riak CS package..."
+    curl -s -O http://s3.amazonaws.com/private.downloads.basho.com/riak-cs/13c531/1.0.1/rhel/6/riak-cs-1.0.1-1.el6.x86_64.rpm 
+ 
+    echo "Installing Riak CS package..."
+    rpm -Uvh riak-cs-1.0.1-1.el6.x86_64.rpm
+  else
+    echo "Downloading Riak EDS package..."
+    curl -s -O http://s3.amazonaws.com/private.downloads.basho.com/riak_ee/5fp9c2/1.1.2/riak-ee_1.1.2-1_amd64.deb
 
-  echo "Downloading Riak CS package..."
-  curl -s -O http://s3.amazonaws.com/private.downloads.basho.com/riak-cs/13c531/1.0.1/ubuntu/lucid/riak-cs_1.0.1-1_amd64.deb
+    echo "Installing Riak EDS package..."
+    dpkg -i riak-ee_1.1.2-1_amd64.deb > /dev/null
 
-  echo "Installing Riak CS package..."
-  dpkg -i riak-cs_1.0.1-1_amd64.deb > /dev/null
+    echo "Downloading Riak CS package..."
+    curl -s -O http://s3.amazonaws.com/private.downloads.basho.com/riak-cs/13c531/1.0.1/ubuntu/lucid/riak-cs_1.0.1-1_amd64.deb
+
+    echo "Installing Riak CS package..."
+    dpkg -i riak-cs_1.0.1-1_amd64.deb > /dev/null
+  fi
 fi
 
 if [ $INSTALL_STANCHION == "y" ]
 then
-  echo "Downloading Stanchion package..."
-  curl -s -O http://s3.amazonaws.com/private.downloads.basho.com/stanchion/5bd9d7/1.0.1/ubuntu/lucid/stanchion_1.0.1-1_amd64.deb
+  if [ $RHEL == TRUE ]
+  then
+    echo "Downloading Stanchion package..."
+    curl -s -O http://s3.amazonaws.com/private.downloads.basho.com/stanchion/5bd9d7/1.0.1/rhel/6/stanchion-1.0.1-1.el6.x86_64.rpm
 
-  echo "Installing Stanchion package..."
-  dpkg -i stanchion_1.0.1-1_amd64.deb > /dev/null 
+    echo "Installing Stanchion package..."
+    rpm -Uvh stanchion-1.0.1-1.el6.x86_64.rpm > /dev/null 
+  else
+    echo "Downloading Stanchion package..."
+    curl -s -O http://s3.amazonaws.com/private.downloads.basho.com/stanchion/5bd9d7/1.0.1/ubuntu/lucid/stanchion_1.0.1-1_amd64.deb
+
+    echo "Installing Stanchion package..."
+    dpkg -i stanchion_1.0.1-1_amd64.deb > /dev/null 
+  fi
 fi
 
 if [ $INSTALL_HAPROXY == "y" ]
 then
   echo "Installing HAProxy package..."
-  apt-get -qq install haproxy
+
+  if [ $RHEL == TRUE ]
+  then
+    yum install haproxy
+  else
+    apt-get -qq install haproxy
+  fi
 fi
 
 #----------------------------------------------------------------------
@@ -251,6 +305,7 @@ then
     ADMIN_EMAIL=$(ask_user "Admin email address" $ADMIN_EMAIL)
 
     echo "Creating the admin user..."
+    sleep 10
     KEYS=`curl -s http://${LOCAL_IP}:8080/user --data "name=${ADMIN_NAME}&email=${ADMIN_EMAIL}" | tr -s ',' '\n' | grep key_ | cut -f2 -d ':' | tr -d '"'`
     ADMIN_KEY=`echo $KEYS | cut -f1 -d ' '`
     ADMIN_SECRET=`echo $KEYS | cut -f2 -d ' '`
@@ -342,9 +397,9 @@ Post-Install Instructions:
         server riak3 riak3:8087 weight 1 maxconn 1000
 
 4). The easiest way to test your new Riak CS installation is with s3cmd. 
-    You can install and configure s3cmd by typing:
+    Once s3cmd is installed, you can configure it by typing:
 
-    $ apt-get install s3cmd && s3cmd --configure
+    $ s3cmd --configure
 
     There are 4 important configuration options:
       1. Access Key - output by this setup script
