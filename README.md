@@ -40,15 +40,36 @@ Now let's grab the Riak and Riak CS packages.  Since this is our first node, we'
 
 First we download and install Riak:
 
+RHEL6:
+
+    $ curl -s -O http://s3.amazonaws.com/private.downloads.basho.com/riak_ee/5fp9c2/1.1.2/riak-ee-1.1.2-1.el6.x86_64.rpm
+    $ rpm -Uvh riak-ee-1.1.2-1.el6.x86_64.rpm
+    
+Ubuntu Lucid:
+
     $ curl -s -O http://s3.amazonaws.com/private.downloads.basho.com/riak_ee/5fp9c2/1.1.2/riak-ee_1.1.2-1_amd64.deb
     $ sudo dpkg -i riak-ee_1.1.2-1_amd64.deb
     
 Next is Riak CS:
 
+RHEL6:
+
+    $ curl -s -O http://s3.amazonaws.com/private.downloads.basho.com/riak-cs/13c531/1.0.1/rhel/6/riak-cs-1.0.1-1.el6.x86_64.rpm
+    $ rpm -Uvh riak-cs-1.0.1-1.el6.x86_64.rpm
+    
+Ubuntu Lucid:
+
     $ curl -s -O http://s3.amazonaws.com/private.downloads.basho.com/riak-cs/13c531/1.0.1/ubuntu/lucid/riak-cs_1.0.1-1_amd64.deb
     $ sudo dpkg -i riak-cs_1.0.1-1_amd64.deb 
     
 And finally Stanchion:
+
+RHEL 6:
+
+    $ curl -s -O http://s3.amazonaws.com/private.downloads.basho.com/stanchion/5bd9d7/1.0.1/rhel/6/stanchion-1.0.1-1.el6.x86_64.rpm
+    $ sudo rpm -Uvh stanchion-1.0.1-1.el6.x86_64.rpm
+    
+Ubuntu Lucid:
 
     $ curl -s -O http://s3.amazonaws.com/private.downloads.basho.com/stanchion/5bd9d7/1.0.1/ubuntu/lucid/stanchion_1.0.1-1_amd64.deb
     $ sudo dpkg -i stanchion_1.0.1-1_amd64.deb
