@@ -65,19 +65,18 @@ Change the following line in `/etc/riak/app.config`
 to
 
     {add_paths, ["/usr/lib64/riak-cs/lib/riak_moss-1.0.1/ebin"]},
-            {storage_backend, riak_cs_kv_multi_backend},
-            {multi_backend_prefix_list, [{<<"0b:">>, be_blocks}]},
-            {multi_backend_default, be_default},
-            {multi_backend, [
-                {be_default, riak_kv_eleveldb_backend, [
-                    {max_open_files, 50},
-                    {data_root, "/var/lib/riak/leveldb"}
-                ]},
-                {be_blocks, riak_kv_bitcask_backend, [
-                    {data_root, "/var/lib/riak/bitcask"}
-                ]}
-            ]
-      },
+    {storage_backend, riak_cs_kv_multi_backend},
+    {multi_backend_prefix_list, [{<<"0b:">>, be_blocks}]},
+    {multi_backend_default, be_default},
+    {multi_backend, [
+        {be_default, riak_kv_eleveldb_backend, [
+            {max_open_files, 50},
+            {data_root, "/var/lib/riak/leveldb"}
+        ]},
+        {be_blocks, riak_kv_bitcask_backend, [
+            {data_root, "/var/lib/riak/bitcask"}
+        ]}
+    ]},
 
 
 Next, we set our interface IPs in the app.config files.  In a production environment, you will likely have multiple
