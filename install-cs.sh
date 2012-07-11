@@ -161,28 +161,28 @@ then
   if [ $RHEL == TRUE ]
   then
     echo "Downloading Riak EDS package..."
-    curl -s -O http://s3.amazonaws.com/private.downloads.basho.com/riak_ee/5fp9c2/1.1.2/riak-ee-1.1.2-1.el6.x86_64.rpm 
+    curl -s -O http://s3.amazonaws.com/private.downloads.basho.com/riak_ee/5fp9c2/1.1.4/riak-ee-1.1.4-1.el6.x86_64.rpm 
   
     echo "Installing Riak EDS package..."
-    rpm -Uvh riak-ee-1.1.2-1.el6.x86_64.rpm
+    rpm -Uvh riak-ee-1.1.4-1.el6.x86_64.rpm
 
     echo "Downloading Riak CS package..."
-    curl -s -O http://s3.amazonaws.com/private.downloads.basho.com/riak-cs/13c531/1.0.1/rhel/6/riak-cs-1.0.1-1.el6.x86_64.rpm 
+    curl -s -O http://s3.amazonaws.com/private.downloads.basho.com/riak-cs/13c531/1.0.2/rhel/6/riak-cs-1.0.2-1.el6.x86_64.rpm 
  
     echo "Installing Riak CS package..."
-    rpm -Uvh riak-cs-1.0.1-1.el6.x86_64.rpm
+    rpm -Uvh riak-cs-1.0.2-1.el6.x86_64.rpm
   else
     echo "Downloading Riak EDS package..."
-    curl -s -O http://s3.amazonaws.com/private.downloads.basho.com/riak_ee/5fp9c2/1.1.2/riak-ee_1.1.2-1_amd64.deb
+    curl -s -O http://s3.amazonaws.com/private.downloads.basho.com/riak_ee/5fp9c2/1.1.4/riak-ee_1.1.4-1_amd64.deb
 
     echo "Installing Riak EDS package..."
-    dpkg -i riak-ee_1.1.2-1_amd64.deb > /dev/null
+    dpkg -i riak-ee_1.1.4-1_amd64.deb > /dev/null
 
     echo "Downloading Riak CS package..."
-    curl -s -O http://s3.amazonaws.com/private.downloads.basho.com/riak-cs/13c531/1.0.1/ubuntu/lucid/riak-cs_1.0.1-1_amd64.deb
+    curl -s -O http://s3.amazonaws.com/private.downloads.basho.com/riak-cs/13c531/1.0.2/ubuntu/natty/riak-cs_1.0.2-1_amd64.deb 
 
     echo "Installing Riak CS package..."
-    dpkg -i riak-cs_1.0.1-1_amd64.deb > /dev/null
+    dpkg -i riak-cs_1.0.2-1_amd64.deb > /dev/null
   fi
 fi
 
@@ -235,7 +235,7 @@ then
   RIAKCS_IP=$(ask_user "Riak CS IP" $RIAKCS_IP)
 
   echo "Setting Riak CS custom backend in Riak EDS app.config..."
-  perl -pi -e "s/{storage_backend, riak_kv_bitcask_backend},/{add_paths, \[\"\/usr\/lib64\/riak-cs\/lib\/riak_moss-1.0.1\/ebin\"\]},\n\t\t{storage_backend, riak_cs_kv_multi_backend},\n\t\t{multi_backend_prefix_list, \[{<<\"0b:\">>, be_blocks}\]},\n\t\t{multi_backend_default, be_default},\n\t\t{multi_backend, \[\n\t\t\t{be_default, riak_kv_eleveldb_backend, \[\n\t\t\t\t{max_open_files, 50},\n\t\t\t\t{data_root, \"\/var\/lib\/riak\/leveldb\"}\n\t\t\t\]},\n\t\t\t{be_blocks, riak_kv_bitcask_backend, \[\n\t\t\t\t{data_root, \"\/var\/lib\/riak\/bitcask\"}\n\t\t\t\]}\n\t\t\]\n\t    },/g" /etc/riak/app.config
+  perl -pi -e "s/{storage_backend, riak_kv_bitcask_backend},/{add_paths, \[\"\/usr\/lib\/riak-cs\/lib\/riak_moss-1.0.2\/ebin\"\]},\n\t\t{storage_backend, riak_cs_kv_multi_backend},\n\t\t{multi_backend_prefix_list, \[{<<\"0b:\">>, be_blocks}\]},\n\t\t{multi_backend_default, be_default},\n\t\t{multi_backend, \[\n\t\t\t{be_default, riak_kv_eleveldb_backend, \[\n\t\t\t\t{max_open_files, 50},\n\t\t\t\t{data_root, \"\/var\/lib\/riak\/leveldb\"}\n\t\t\t\]},\n\t\t\t{be_blocks, riak_kv_bitcask_backend, \[\n\t\t\t\t{data_root, \"\/var\/lib\/riak\/bitcask\"}\n\t\t\t\]}\n\t\t\]\n\t    },/g" /etc/riak/app.config
 
   echo "Updating IPs in Riak EDS and Riak CS app.config and vm.args files..."
   perl -pi -e "s/{moss_ip, \"127.0.0.1\"}/{moss_ip, \"${RIAKCS_IP}\"}/g" /etc/riak-cs/app.config
@@ -412,3 +412,4 @@ Post-Install Instructions:
     $ s3cmd mb s3://test_bucket
 
 "
+
